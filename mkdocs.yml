@@ -1,13 +1,13 @@
 # Project information
 site_name: Zabbix 7 Monitoring
-site_url: https://trikke76.github.io/Zabbix-Book
+site_url: https://translaster.github.io/Zabbix-Book-ru
 site_author: Patrik Uytterhoeven and all github contributors
 site_description: An open-source Zabbix book
 copyright: Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License
 
 # Repository
-repo_name: trikke76
-repo_url: https://github.com/trikke76/Zabbix-Book
+repo_name: translaster
+repo_url: https://github.com/translaster/Zabbix-Book-ru
 edit_uri: edit/master/docs
 docs_dir: docs
 
@@ -131,6 +131,29 @@ plugins:
             Getting started: Aan de slag
             The basics: De basis
             Problem detection: Probleem detectie
+        - locale: ru
+          name: Russian
+          build: true
+          nav_translations:
+            Welcome: Приветствие
+            Getting started: Начало
+            The basics: Основы
+            Problem detection: Обнаружение проблем
+            Taking action when problems come: Принимаем меры при возникновении проблем
+            Managing permissions: Управление разрешениями
+            Visualising Problems: Визуализация проблем
+            Automating configuration: Автоматизация настройки
+            VMWare monitoring: Мониторинг VMWare
+            Monitoring websites: Мониторинг веб-сайтов
+            Monitoring SNMP, IPMI and JAVA: Мониторинг SNMP, IPMI и JAVA
+            Authentication: Аутентификация
+            Monitoring with Proxies: Мониторинг с прокси
+            Securing Zabbix: Безопасность Zabbix
+            Maintaining Zabbix: Обслуживание Zabbix
+            Monitoring Windows: Мониторинг Windows
+            Zabbix API: Zabbix API
+            Zabbix Extras: Дополнительные возможности Zabbix
+            Translation and Guidlines: Перевод и руководства
         - locale: pt
           name: Portuguese
           build: true
