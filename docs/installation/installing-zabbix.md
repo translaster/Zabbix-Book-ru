@@ -600,7 +600,7 @@ When we return now to our frontend we are able to select the Chinese language.
 ![Zabbix Welcome page](image/zabbix-locales-chinese.png)
 
 ???+ Note 
-    If your language is not available in the frontend don't panic it just means that there is no translation or that the translation was not 100% complete. Zabbis is free and relies on the community for it's translations so you can help in creating the translation. Go to the page ```https://translate.zabbix.com/``` and help us to make Zabbix get better. Once the translation is complete the next Zabbix minor patch version should have your language included.
+    If your language is not available in the frontend don't panic it just means that there is no translation or that the translation was not 100% complete. Zabbix is free and relies on the community for it's translations so you can help in creating the translation. Go to the page ```https://translate.zabbix.com/``` and help us to make Zabbix get better. Once the translation is complete the next Zabbix minor patch version should have your language included.
 
 Click next when you are satisfied with the transaltions available. You will arrive at a screen to verifiy if all pre-requisites are met. If not fix them first but normaly it should be fine and you should be just able to click Next
 
