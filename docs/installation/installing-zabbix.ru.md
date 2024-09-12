@@ -1,40 +1,57 @@
 # Установка Zabbix
 
-В этой главе мы рассмотрим установку нашего сервера Zabbix. 
-В предыдущей теме мы уже установили БД, теперь посмотрим, как установить сервер Zabbix и подключить его к нашей базе данных. Мы также рассмотрим возможные варианты дизайна, поскольку Zabbix можно устанавливать модульно.
+В этой главе мы рассмотрим процесс установки сервера Zabbix.
+В предыдущем разделе мы рассмотрели установку базы данных.
+Теперь мы перейдем к установке сервера Zabbix и подключению его к ранее настроенной базе данных.
+Кроме того, мы рассмотрим различные варианты построения, поскольку Zabbix поддерживает модульный подход к установке.
 
-Прежде чем устанавливать Zabbix, мы должны знать, как устроен сервер. Сервер Zabbix построен по модульному принципу на основе 3 компонентов.
+Прежде чем приступить к установке, важно понять архитектуру Zabbix.
+Сервер Zabbix построен по модульному принципу и состоит из трех основных компонентов, которые мы подробно рассмотрим.
 
 - Сервер Zabbix
 - Веб-сервер Zabbix
 - База данных Zabbix
 
-![Установка сервера Zabbix](image/zabbix-server.png){width=80%}
+![Zabbix Server Setup](image/zabbix-server.png){width=80%}
 
-Все эти компоненты могут быть установлены на одном сервере или разделены на 3 разных сервера.
-Сам сервер Zabbix - это мозг, выполняющий все расчеты триггеров и отправляющий все оповещения.
-База данных - это место, где сервер Zabbix хранит свою конфигурацию и все данные, которые мы собрали.
-Веб-сервер предоставляет нам внешний интерфейс. Обратите внимание, что у Zabbix есть API, и он также находится на фронтенде, а не на стороне сервера Zabbix.
+Все эти компоненты могут быть установлены на одном сервере или распределены на трех отдельных серверах.
+Ядром системы является сервер Zabbix, который часто называют «мозгом».
+Этот компонент отвечает за обработку расчетов триггеров и отправку оповещений.
+База данных служит хранилищем для конфигурации сервера Zabbix и всех данных, которые он собирает.
+Веб-сервер обеспечивает пользовательский интерфейс (front-end) для взаимодействия с системой.
+Важно отметить, что API Zabbix является частью внешнего компонента, а не самого сервера Zabbix.
 
-Все эти части должны работать вместе, как вы можете видеть на изображении выше. Сервер Zabbix должен считывать конфигурацию и хранить данные в базе данных, а внешний модуль Zabbix должен иметь возможность записывать конфигурацию в базу данных. Внешний модуль Zabbix также должен проверять онлайн-статус нашего сервера Zabbix и считывать некоторую другую информацию.
+Эти компоненты должны функционировать вместе без сбоев, как показано на
+диаграмме выше.
+Сервер Zabbix должен считывать конфигурации и хранить данные мониторинга в базы данных, в то время как внешнему компоненту необходим доступ для чтения и записи данных конфигурации.
+Кроме того, внешний модуль должен иметь возможность проверять состояние сервера Zabbix и получать дополнительную необходимую информацию для обеспечения бесперебойной работы.
 
-Для нашей установки мы будем использовать 2 ВМ, одну ВМ с сервером Zabbix и нашим веб-сервером Zabbix, а другую ВМ с нашей базой данных Zabbix.
+Для нашей установки мы будем использовать две виртуальные машины (ВМ):
+на одной ВМ будут размещены сервер Zabbix и веб-фронтенд Zabbix, а на второй
+ВМ будет размещена база данных Zabbix.
 
-В этой главе мы рассмотрим, как :
+В этой главе мы рассмотрим следующие темы:
 
-- Установить сервер Zabbix для MySQL/MariaDB
-- Установить сервер Zabbix для PostgreSQL
-- Установить фронтенд Zabbix с помощью NginX
-- Установить фронтенд Zabbix с помощью Apache
+- Установка сервера Zabbix для MySQL/MariaDB
+- Установка сервера Zabbix для PostgreSQL
+- Установка внешнего интерфейса Zabbix с помощью NginX
+- Установка внешнего интерфейса Zabbix с помощью Apache
+
+В каждом разделе вы пройдете через шаги по настройке этих компонентов
+соответствии с вашей конкретной конфигурацией.
+
 ---
 
 ## Установка сервера Zabbix
 
-Прежде чем приступить к установке сервера Zabbix, убедитесь, что сервер правильно настроен, как объяснялось в теме [Базовая настройка ОС перед началом работы](Requirements.ru.md).
-В данном случае важно отключить SELinux. Как правильно это сделать, мы увидим позже в главе [Securing Zabbix with SELinux](../security/securing-zabbix-selinux.ru.md). 
-Мы можем проверить состояние SELinux с помощью команды ```estatus```:
+Прежде чем приступить к установке сервера Zabbix, убедитесь, что сервер сервер правильно настроен, как описано в предыдущем разделе, [Базовая конфигурация ОС](Requirements.md).
 
-```
+Еще одним важным шагом на этом этапе является отключение SELinux, который может помешать установке и работе Zabbix.
+Мы вернемся к SELinux в главе [Защита Zabbix с помощью SELinux](../security/securing-zabbix-selinux.ru.md) чтобы узнать, как настроить его безопасно.
+
+Чтобы проверить текущее состояние SELinux, вы можете использовать следующую команду: `sestatus`.
+
+```bash
 # sestatus
 SELinux status:                 enabled
 SELinuxfs mount:                /sys/fs/selinux
@@ -48,10 +65,10 @@ Memory protection checking:     actual (secure)
 Max kernel policy version:      33
 ```
 
-Как вы видите, сейчас мы находимся в режиме принудительного выполнения.
-Чтобы отключить SELinux, просто выполните команду ```setenforce 0```, чтобы отключить его. 
+Как показано выше, в данный момент система находится в режиме принудительного выполнения.
+Чтобы временно отключить SELinux, вы можете выполнить следующую команду: `setenforce 0`.
 
-```
+```bash
 # setenforce 0
 # sestatus
 
@@ -66,18 +83,23 @@ Policy deny_unknown status:     allowed
 Memory protection checking:     actual (secure)
 Max kernel policy version:      33
 ```
-Как вы можете видеть, наш текущий режим теперь разрешающий. 
-Однако он не является постоянным, поэтому также необходимо изменить конфигурационный файл SELinux. Это можно сделать, изменив файл ```/etc/config/selinux``` и заменив enforcing на permissive.
-Более простой способ - выполнить следующую команду :
-```
+
+Теперь, как вы можете видеть, режим переключен на разрешающий.
+Однако это изменение не сохраняется при перезагрузке.
+Чтобы сделать его постоянным, необходимо изменить конфигурационный файл SELinux `/etc/selinux/config`. Откройте файл и замените `enforcing` на `permissive`.
+
+Кроме того, вы можете добиться того же результата более простым способом, выполнив следующую команду:
+
+```bash
 sed -i 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config
 ```
 
-Эта строка изменит файл конфигурации. Таким образом, когда мы снова запустим ```estatus```, то увидим, что находимся в режиме ```permissive``` и наш конфигурационный файл также находится в режиме ```permissive```. 
+Эта строка изменит конфигурационный файл.
+Таким образом, когда мы снова запустим `sestatus`, то увидим, что находимся в режиме `permissive` и что наш конфигурационный файл также находится в режиме `permissive`.
 
-Мы можем проверить это с помощью команды **cat**.
+Мы можем проверить это с помощью команды `cat`.
 
-```
+```bash
 # cat /etc/selinux/config
 
 # This file controls the state of SELinux on the system.
@@ -108,9 +130,9 @@ SELINUX=permissive
 SELINUXTYPE=targeted
 ```
 
-И мы также можем проверить это с помощью нашей команды ```setstatus```. 
+И мы также можем проверить это с помощью нашей команды `setstatus`.
 
-```
+```bash
 # sestatus
 
 SELinux status:                 enabled
@@ -125,51 +147,84 @@ Memory protection checking:     actual (secure)
 Max kernel policy version:      33
 ```
 
+---
 
-#### Добавление репозитория Zabbix
+### Добавление репозитория Zabbix
 
-На странице [Zabbix Download page](https://www.zabbix.com/download) выберите нужную версию Zabbix, которую хотите установить. В нашем случае это будет 7.0 LTS. Также выберите нужный дистрибутив ОС. В нашем случае это будет Rocky Linux 9. Мы собираемся установить сервер и будем использовать NGINX.
+На странице [Zabbix Download page](https://www.zabbix.com/download) выберите соответствующую версию Zabbix, которую хотите установить.
+В данном случае мы будем использовать `Zabbix 7.0 LTS`. Кроме того, убедитесь, что вы выбрали правильный дистрибутив ОС для вашей среды, которым будет Rocky Linux 9 в нашем случае, но RHEL 9 или AlmaLinux 9 тоже подойдут.
 
-![Установка сервера Zabbix](image/zabbix-download.png)
+Мы установим Zabbix Server вместе с NGINX в качестве веб-сервера для внешнего интерфейса.
+Убедитесь, что вы загрузили соответствующие пакеты для выбранной вами конфигурации.
 
-Первым шагом будет отключение пакетов Zabbix, предоставляемых EPEL, если он у вас установлен. Отредактируйте файл /etc/yum.repos.d/epel.repo и добавьте следующее утверждение.
+![Zabbix Server Setup](image/zabbix-download.png)
 
-```
+Первым делом мы отключим пакеты Zabbix, предоставляемые репозиторием EPEL, если он установлен в вашей системе.
+Для этого отредактируйте файл `/etc/yum.repos.d/epel.repo` и добавьте следующее чтобы отключить репозиторий EPEL по умолчанию:
+
+```ini
 [epel]
 ...
 excludepkgs=zabbix*
 ```
-???+ Tip
-    Включенный репозиторий EPEL - это плохая практика, которая может быть опасна, при его использовании. Лучше отключить репозиторий и использовать dnf install <package> --enablerepo=epel. Так вы никогда не перезапишете и не установите случайно нежелательные пакеты.
 
-Наша следующая задача - установить репозиторий Zabbix на нашу ОС и выполнить очистку dnf, чтобы старые кэш-файлы метаданных нашего репозитория были очищены.
+???+ tip
+Считается плохой практикой постоянно держать репозиторий EPEL включенным, так как это может привести к конфликтам из-за непреднамеренной перезаписи или установки нежелательных пакетов. Вместо этого безопаснее включать репозиторий только при необходимости, используя следующую команду во время установки: `dnf install --enablerepo=epel <package-name>`.
+Это гарантирует, что EPEL будет включен только при явном требовании.
 
-``` 
-rpm -Uvh https://repo.zabbix.com/zabbix/7.0/rhel/9/x86_64/zabbix-release-6.5-2.el9.noarch.rpm
-dnf clean all
+Далее мы установим репозиторий Zabbix в нашу операционную систему.
+После добавления репозитория Zabbix рекомендуется выполнить очистку репозитория для удаления старых файлов кэша и убедиться, что метаданные репозитория актуальны.
+Это можно сделать, выполнив команду:
+
+```bash
+> rpm -Uvh https://repo.zabbix.com/zabbix/7.0/rhel/9/x86_64/zabbix-release-6.5-2.el9.noarch.rpm
+> dnf clean all
 ```
+
+Это обновит метаданные репозитория и подготовит систему к установке Zabbix.
+
 ???+ note
-    Репозиторий - это конфигурация в Linux, которую вы можете добавить, чтобы сделать пакеты доступными для установки в вашей ОС. Лучше всего рассматривать его как магазин приложений, в котором можно найти программное обеспечение вашего разработчика. В данном случае это репозиторий Zabbix. Существует множество репозиториев, которые вы можете добавить, но вы должны быть уверены, что им можно доверять. Поэтому всегда стоит придерживаться репозиториев вашей ОС и добавлять дополнительные только тогда, когда вы уверены, что им можно доверять и они необходимы. В нашем случае это репозиторий от нашего разработчика Zabbix, поэтому его можно смело добавлять. Epel - еще один популярный репозиторий для систем RedHat, который считается безопасным.
+Репозиторий в Linux - это конфигурация, которая позволяет вам получать доступ и устанавливать программные пакеты. Его можно представить как «магазин приложений», где вы находите и загружаете программное обеспечение из надежного источника, в данном случае из репозитория Zabbix.
+Существует множество репозиториев, но важно добавлять только те, которым вы доверяете.
+Безопаснее всего придерживаться репозиториев, предоставляемых вашей операционной системой, и добавлять дополнительные только тогда, когда вы уверены, что им можно доверять и они необходимы.
 
-#### Установка сервера Zabbix для MySQL/MariaDB
+    Для нашей установки репозиторий Zabbix предоставлен самим производителем, что делает его надежным источником. Другим популярным и безопасным репозиторием для систем на базе RedHat является EPEL (Extra Packages for Enterprise Linux), широкоиспользуемый в корпоративных средах.
+    Однако всегда соблюдайте осторожность при добавлении новых репозиториев, чтобы обеспечить безопасности и стабильности системы.
 
-Теперь, когда репозиторий с программным обеспечением добавлен в нашу систему, мы готовы установить сервер Zabbix и веб-сервер. Помните, что веб-сервер может быть установлен на другой системе. Нет необходимости устанавливать их на одном сервере.
+---
 
-```dnf install zabbix-server-mysql zabbix-web-mysql```
+## Установка сервера Zabbix для MySQL/MariaDB
 
-Теперь, когда мы установили пакеты для сервера Zabbix и фронтенда, нам нужно изменить конфигурацию сервера Zabbix, чтобы мы могли подключиться к нашей базе данных. Откройте файл ```/etc/zabbix/zabbix_server.conf``` и замените следующие строки:
+Теперь, когда мы добавили в репозиторий Zabbix необходимое программное обеспечение, мы готовы установить сервер Zabbix и веб-сервер.
+Помните, что веб-сервер не обязательно устанавливать на ту же машину с сервером Zabbix; при желании их можно разместить на разных системах.
 
+Чтобы установить сервер Zabbix и компоненты веб-сервера для MySQL/MariaDB, выполните следующую команду:
+
+```bash
+dnf install zabbix-server-mysql zabbix-web-mysql
 ```
-DBHost=<ip or dns of your MariaDB server>
-DBName=<the name of your database>
-DBUser=<the user that will connect to the database>
-DBPassword=<your super secret password>
-```
-Убедитесь, что перед параметром config нет символа '#', иначе Zabbix будет воспринимать его как текст, а не как параметр. Также убедитесь, что нет лишних дублирующихся строк. Zabbix всегда будет брать последний параметр конфигурации, если есть более 1 строки с одним и тем же параметром.
 
-В нашем случае конфигурация будет выглядеть следующим образом:
+После успешной установки пакетов сервера Zabbix и фронтента нам необходимо настроить сервер Zabbix для подключения к базе данных.
+Для этого необходимо изменить файл конфигурации сервера Zabbix.
+Откройте файл `/etc/zabbix/zabbix_server.conf` и обновите следующие строки в соответствии с конфигурацией вашей базы данных:
 
+```ini
+DBHost=<database-host>
+DBName=<database-name>
+DBUser=<database-user>
+DBPassword=<database-password>
 ```
+
+Замените `<database-host>`, `<database-name>`, `<database-user>`, и `<database-password>` на значения, соответствующие вашей конфигурации.
+Это гарантирует, что сервер Zabbix сможет взаимодействовать с вашей базой данных.
+
+Убедитесь, что перед параметрами конфигурации нет # (символа комментария), поскольку Zabbix будет рассматривать строки, начинающиеся с #, как комментарии, игнорируя их во время выполнения.
+Кроме того, дважды проверьте, не дублируются ли строки конфигурации; если есть несколько строк с одним и тем же параметром, Zabbix будет использовать значение
+из последней строки.
+
+Для нашего случая конфигурация будет выглядеть следующим образом:
+
+```ini
 # vi /etc/zabbix/zabbix_server.conf
 
 DBHost=<ip or dns of your MariaDB server>
@@ -179,18 +234,48 @@ DBPassword=<your super secret password>
 DBPort=3306
 ```
 
+В данном примере:
+
+- DBHost - это хост, на котором запущена ваша база данных (используйте localhost, если она находится на той же машине).
+- DBName - это имя базы данных Zabbix.
+- DBUser - пользователь базы данных.
+- DBPassword - пароль для пользователя базы данных.
+
+Убедитесь, что настройки отражают конфигурацию базы данных в вашей среде.
+
 ???+ Note
-    В конфигурационном файле сервера Zabbix есть возможность включить дополнительный файл конфигурации с параметрами, которые вы можете изменить или добавить. В продакшене, вероятно, лучше не трогать конфигурационный файл, а добавить новый файл и включить в него параметры, которые вы хотите изменить. Таким образом, вам никогда не придется редактировать исходный конфигурационный файл после обновления. Это также облегчит вам жизнь при работе с такими инструментами конфигурирования, как Ansible, Puppet, SaltStack, ..... Единственное, что нужно сделать, это убрать символ # перед строкой '# Include=/usr/local/etc/zabbix_server.conf.d/*.conf' и убедиться, что путь с настроенным конфигурационным файлом, который может быть прочитан пользователем zabbix, существует.
+В конфигурационный файл сервера Zabbix можно включить дополнительные конфигурационные файлы для пользовательских параметров. Для продакшена часто лучше не изменять исходный файл конфигурации напрямую.
+Вместо этого можно создать и включить отдельный файл конфигурации для любых дополнительных или измененных параметров.
+Такой подход гарантирует, что исходный файл конфигурации останется нетронутым, что особенно полезно при выполнении обновлений или управлении конфигурациями с помощью таких инструментов, как Ansible, Puppet или SaltStack.
 
-Теперь, когда мы изменили конфигурацию вашего сервера Zabbix так, чтобы он мог подключаться к нашей БД, мы готовы приступить к работе. Выполните следующую команду, чтобы включить сервер Zabbix и сделать его активным при следующей загрузке.
+Чтобы включить эту функцию, уберите `#` из строки:
 
-```systemctl enable zabbix-server --now```
-
-Наша служба сервера Zabbix запустится, и если все прошло успешно, то мы должны увидеть в файле журнала сервера Zabbix следующий вывод 
-
-```tail /var/log/zabbix/zabbix_server.log```
-
+```ini
+# Include=/usr/local/etc/zabbix_server.conf.d/*.conf
 ```
+
+    Затем убедитесь, что путь `/usr/local/etc/zabbix_server.conf.d/` существует, и создайте пользовательский файл конфигурации в этом каталоге.
+    Этот файл должен быть доступен для чтения пользователю `zabbix`. Таким образом вы сможете добавлять или изменять параметры, не изменяя конфигурационный файл по умолчанию, что сделает управление системой и ее обновление более плавным.
+
+Обновив конфигурацию сервера Zabbix для подключения к базе данных, теперь можно запустить и включить службу сервера. Выполните следующую команду чтобы включить сервер Zabbix и обеспечить его автоматический запуск при загрузке:
+
+```bash
+systemctl enable zabbix-server --now`
+```
+
+Эта команда немедленно запустит службу сервера Zabbix и настроит чтобы она запускалась при старте системы.
+
+Чтобы убедиться, что сервер Zabbix работает правильно, проверьте файл журнала на наличие любых сообщений.
+Вы можете просмотреть последние записи в файле журнала сервера Zabbix, используя:
+
+```bash
+tail /var/log/zabbix/zabbix_server.log
+```
+
+Ищите сообщения, указывающие на успешный запуск сервера.
+Если возникнут какие-либо проблемы, в файле журнала можно найти подробную информацию, которая поможет в устранении неполадок.
+
+```bash
   1123:20231120:110604.440 Starting Zabbix Server. Zabbix 7.0.0alpha7 (revision 60de6a81aca).
   1123:20231120:110604.440 ****** Enabled features ******
   1123:20231120:110604.440 SNMP monitoring:           YES
@@ -216,7 +301,7 @@ DBPort=3306
   1134:20231120:110604.841 server #10 started [lld worker #2]
 ```
 
-Если произошла ошибка и сервер не смог подключиться к базе данных, то в файле журнала сервера вы увидите что-то вроде этого:
+Если произошла ошибка и сервер не смог подключиться к базе данных, то вы увидите что-то вроде этого в файле журнала сервера :
 
 ```
  10773:20231118:213248.570 Starting Zabbix Server. Zabbix 7.0.0alpha7 (revision 60de6a81aca).
@@ -238,9 +323,9 @@ DBPort=3306
  10773:20231118:213258.579 database is down: reconnecting in 10 seconds
 ```
 
-Давайте проверим службу сервера Zabbix, чтобы убедиться, что она включена и переживет перезагрузку.
+Давайте проверим службу сервера Zabbix, чтобы убедиться, что она включена так, что выдерживает перезагрузку
 
-```
+```bash
 # systemctl status zabbix-server
 
 ● zabbix-server.service - Zabbix Server
@@ -281,29 +366,56 @@ DBPort=3306
              ├─1150 "/usr/sbin/zabbix_server: poller #4 [got 0 values in 0.000010 sec, idle 1 sec]"
 ```
 
-На этом мы завершаем главу об установке и настройке сервера Zabbix. 
-Далее нам нужно настроить наш фронтенд. Вы можете взглянуть на [Установка фронтенда Zabbix с Nginx](#installing-zabbix-frontend-with-nginx) или [Установка фронтенда Zabbix с Apache](#installing-zabbix-frontend-with-apache)
+На этом мы завершаем главу об установке и настройке сервера Zabbix с MySQL.
+Далее мы перейдем к настройке внешнего интерфейса.
+Вы можете следовать инструкциям либо:
 
-#### Установка сервера Zabbix для PostgreSQL
+- [Установка фронтенда Zabbix с Nginx](#установка-фронтенда-zabbix-с-nginx)
+- [Установка фронтенда Zabbix с Apache](#установка-фронтенда-zabbix-с-apache)
 
-Теперь, когда репозиторий с программным обеспечением добавлен в нашу систему, мы готовы установить сервер Zabbix и веб-сервер. Помните, что веб-сервер может быть установлен на другой системе. Нет необходимости устанавливать их на одном сервере.
+Каждое руководство поможет вам настроить веб-интерфейс для Zabbix на основе выбранного вами веб-сервера.
 
-```dnf install zabbix-server-pgsql zabbix-web-pgsql```
+---
 
-Теперь, когда мы установили пакеты для сервера Zabbix и фронтенда, нам нужно изменить конфигурацию сервера Zabbix, чтобы была возможность подключиться к нашей базе данных. Откройте файл ```/etc/zabbix/zabbix_server.conf``` и замените следующие строки:
+## Installing the Zabbix server for PostgreSQL
 
+Now that we’ve added the Zabbix repository with the necessary software,
+we are ready to install both the Zabbix server and the web server.
+Keep in mind that the web server doesn’t need to be installed on the same machine
+as the Zabbix server; they can be hosted on separate systems if desired.
+
+To install the Zabbix server and the web server components for PostgreSQL,
+run the following command:
+
+`dnf install zabbix-server-pgsql zabbix-web-pgsql`
+
+After successfully installing the Zabbix server and frontend packages,
+we need to configure the Zabbix server to connect to the database.
+This requires modifying the Zabbix server configuration file.
+Open the `/etc/zabbix/zabbix_server.conf` file and update the following lines
+to match your database configuration:
+
+```ini
+DBHost=<ip or dns of your PostgreSQL server>
+DBName=<the name of your database>
+DBSchema=<our PostgreSQL schema name>
+DBUser=<the user that will connect to the database>
+DBPassword=<your super secret password>
 ```
-DBHost=<ip или dns вашего сервера PostgreSQL>
-DBName=<название базы данных>
-DBSchema=<название вашей схемы PostgreSQL>
-DBUser=<пользователь для подключения к базе данных>
-DBPassword=<ваш суперсекретный пароль>
-```
-Убедитесь, что перед параметром config нет символа '#', иначе Zabbix будет воспринимать его как текст, а не как параметр. Также убедитесь, что нет лишних дублирующихся строк. Zabbix всегда будет брать последний параметр конфигурации, если есть более 1 строки с одним и тем же параметром.
 
-В нашем случае конфигурация будет выглядеть следующим образом:
+Replace <database-host>, <database-name>, <database-user>, and <database-password>
+with the appropriate values for your setup. This ensures that the Zabbix server
+can communicate with your database.
 
-```
+Ensure that there is no # (comment symbol) in front of the configuration parameters,
+as Zabbix will treat lines beginning with # as comments, ignoring them during execution.
+Additionally, double-check for duplicate configuration lines;
+if there are multiple lines with the same parameter, Zabbix will use the value
+from the last occurrence.
+
+For our setup, the configuration will look like this:
+
+```bash
 # vi /etc/zabbix/zabbix_server.conf
 
 DBHost=<ip or dns of your MariaDB server>
@@ -314,18 +426,47 @@ DBPassword=<your super secret password>
 DBPort=5432
 ```
 
+In this example:
+
+- DBHost refers to the host where your database is running (use localhost if it's on the same machine).
+- DBName is the name of the Zabbix database.
+- DBUser is the database user.
+- DBPassword is the password for the database user.
+
+Make sure the settings reflect your environment's database configuration.
+
 ???+ Note
-    В конфигурационном файле сервера Zabbix есть возможность включить дополнительный файл конфигурации с параметрами, которые вы можете изменить или добавить. В продакшене, вероятно, лучше не трогать конфигурационный файл, а добавить новый и включить в него параметры, которые вы захотите изменить. Таким образом, вам никогда не придется редактировать исходный конфигурационный файл после обновления. Это также облегчит вам жизнь при работе с такими инструментами конфигурирования, как Ansible, Puppet, SaltStack, ..... Единственное, что нужно сделать, это убрать символ # перед строкой '# Include=/usr/local/etc/zabbix_server.conf.d/*.conf' и убедиться, что путь с настроенным конфигурационным файлом, который может быть прочитан пользователем zabbix, существует.
+The Zabbix server configuration file offers an option to include additional
+configuration files for custom parameters. For a production environment,
+it's often best to avoid altering the original configuration file directly.
+Instead, you can create and include a separate configuration file for any
+additional or modified parameters. This approach ensures that your original
+configuration file remains untouched, which is particularly useful when performing
+upgrades or managing configurations with tools like Ansible, Puppet, or SaltStack.
+To enable this feature, remove the # from the line:
+`# Include=/usr/local/etc/zabbix_server.conf.d/*.conf`
+Then, ensure the path `/usr/local/etc/zabbix_server.conf.d/` exists and
+create a custom configuration file in this directory.
+This file should be readable by the `zabbix` user. By doing so, you can add
+or modify parameters without modifying the default configuration file,
+making system management and upgrades smoother.
 
-Теперь, когда мы изменили конфигурацию нашего сервера Zabbix так, чтобы он мог подключаться к нашей БД, мы готовы приступить к работе. Выполните следующую команду, чтобы запустить сервер Zabbix и добавить его в автозагрузку.
+With the Zabbix server configuration updated to connect to your database,
+you can now start and enable the Zabbix server service. Run the following command
+to enable the Zabbix server and ensure it starts automatically on boot:
 
-```systemctl enable zabbix-server --now```
+`systemctl enable zabbix-server --now`
 
-Наша служба сервера Zabbix запустится, и если все прошло успешно, вы должны увидеть в файле журнала сервера Zabbix следующий вывод
+This command will start the Zabbix server service immediately and configure it
+to launch on system startup.
+To verify that the Zabbix server is running correctly, check the log file for
+any messages. You can view the latest entries in the Zabbix server log file using:
 
-```tail /var/log/zabbix/zabbix_server.log```
+`tail /var/log/zabbix/zabbix_server.log`
 
-```
+Look for messages indicating that the server has started successfully. If there are any issues, the log file will provide details to help with troubleshooting.
+
+```bash
   1123:20231120:110604.440 Starting Zabbix Server. Zabbix 7.0.0alpha7 (revision 60de6a81aca).
   1123:20231120:110604.440 ****** Enabled features ******
   1123:20231120:110604.440 SNMP monitoring:           YES
@@ -351,9 +492,10 @@ DBPort=5432
   1134:20231120:110604.841 server #10 started [lld worker #2]
 ```
 
-Если произошла ошибка и сервер не смог подключиться к базе данных, то в файле журнала сервера вы увидите что-то вроде этого:
+If there was an error and the server was not able to connect to the database
+you would see something like this in the server log file :
 
-```
+```bash
  10773:20231118:213248.570 Starting Zabbix Server. Zabbix 7.0.0alpha7 (revision 60de6a81aca).
  10773:20231118:213248.570 ****** Enabled features ******
  10773:20231118:213248.570 SNMP monitoring:           YES
@@ -373,13 +515,14 @@ DBPort=5432
  10773:20231118:213258.579 database is down: reconnecting in 10 seconds
 ```
 
-Давайте проверим службу сервера Zabbix, чтобы убедиться, что она включена и переживет перезагрузку.
+Let's check the Zabbix server service to see if it's enabled so that it
+survives a reboot
 
 ```
 # systemctl status zabbix-server
 ```
 
-```
+```bash
 ● zabbix-server.service - Zabbix Server
      Loaded: loaded (/usr/lib/systemd/system/zabbix-server.service; enabled; preset: disabled)
      Active: active (running) since Mon 2023-11-20 11:06:04 CET; 1h 2min ago
@@ -418,25 +561,45 @@ DBPort=5432
              ├─1150 "/usr/sbin/zabbix_server: poller #4 [got 0 values in 0.000010 sec, idle 1 sec]"
 ```
 
-На этом мы завершаем главу об установке и настройке сервера Zabbix.
-Далее нам нужно настроить наш фронтенд. Вы можете взглянуть на [Установка фронтенда Zabbix с Nginx](#installing-zabbix-frontend-with-nginx) или [Установка фронтенда Zabbix с Apache](#installing-zabbix-frontend-with-apache)
+This concludes our chapter on installing and configuring the Zabbix server with PostgreSQL.
+Next, we will proceed with configuring the front-end.
+You can choose to follow the instructions for either:
 
-### Установка фронтента Zabbix с Nginx
+- [Installing Zabbix frontend with Nginx](#installing-zabbix-frontend-with-nginx)
+- [Installing Zabbix frontend with Apache](#installing-zabbix-frontend-with-apache)
 
-Прежде чем мы сможем настроить наш фронтенд, нам нужно сначала установить пакет. Если вы запускаете фронтенд на том же сервере, что и сервер Zabbix, то вам больше ничего не нужно делать, вы можете просто выполнить следующую команду на своем сервере, чтобы установить пакеты, необходимые для установки нашего фронтенда:
+Each guide will walk you through setting up the web interface for Zabbix based
+on your preferred web server.
+
+---
+
+## Installing Zabbix frontend with Nginx
+
+Before configuring the front-end, you need to install the necessary packages.
+If the Zabbix front-end is hosted on the same server as the Zabbix server,
+you can install the required packages with the following command:
+
+```bash
+# dnf install zabbix-nginx-conf and zabbix-web-mysql
+or if you used PostgreSQL
+# dnf install zabbix-web-pgsql
 ```
-dnf install zabbix-nginx-conf и zabbix-web-mysql или если используете Postgres dnf install zabbix-web-pgsql
-```
 
-Если фронтенд установлен на другом сервере, то нужно сначала добавить репозиторий Zabbix, как мы это сделали на нашем сервере Zabbix. Если вы забыли или просто пропустили эту тему и не знаете, как это сделать, посмотрите [Добавление репозитория Zabbix](#zabbix_2).
+This command will install the front-end packages along with the required dependencies
+for Nginx or Apache, depending on your web server choice.
+If you are installing the front-end on a different server, make sure to execute
+this command on that specific machine.
 
-Первое, что нам нужно сделать, это изменить конфигурационный файл Nginx, чтобы не использовать стандартный конфиг.
+If you don't remember how to add the repository, have a look at [Adding the Zabbix repository](#adding-the-zabbix-repository)
 
-```
+First thing we have to do is alter the Nginx configuration file so that we don't
+use the standard config.
+
+```bash
 vi /etc/nginx/nginx.conf
 ```
 
-В этой конфигурации ищите следующий блок, начинающийся с:
+In this config look for the followin block that starts with :
 
 ```
     server {
@@ -449,7 +612,7 @@ vi /etc/nginx/nginx.conf
         include /etc/nginx/default.d/*.conf;
 ```
 
-И поместите следующие строки в комментарий:
+And place the following lines in comment:
 
 ```
     server {
@@ -459,7 +622,7 @@ vi /etc/nginx/nginx.conf
 #        root         /usr/share/nginx/html;
 ```
 
-Теперь нам нужно изменить файл конфигурации Zabbix так, чтобы он соответствовал нашей установке. Отредактируйте следующий файл:
+We now have to alter the Zabbix configuration file so that it matches our setup. Edit the following file:
 
 ```
 vi /etc/nginx/conf.d/zabbix.conf
@@ -475,7 +638,7 @@ server {
         index   index.php;
 ```
 
-Замените первые 2 строки на правильный порт и домен для вашего фронтенда, если у вас нет домена, то можете заменить server_name на _;, как в примере ниже:
+Replace the first 2 lines with the correct port and domain for your frontend in case you don't have a domain you can replace server*name with*; like in the exaple below:
 
 ```
 server {
@@ -489,14 +652,14 @@ server {
         index   index.php;
 ```
 
-Теперь мы готовы запустить наш веб-север и включить его так, чтобы он выходил в сеть после перезагрузки.
+We are now ready to start our websever and enable it so that it comes online after a reboot.
 
 ```
 systemctl enable php-fpm --now
 systemctl enable nginx --now
 ```
 
-Давайте проверим, правильно ли запущена и включена служба (добавлена в автозапуск), чтобы она пережила нашу перезагрузку в следующий раз.
+Let's verify if the service is properly started and enabled so that it survives our reboot next time.
 
 ```
 # systemctl status nginx
@@ -520,44 +683,44 @@ Nov 20 11:42:18 zabbix-srv nginx[1204]: nginx: configuration file /etc/nginx/ngi
 Nov 20 11:42:18 zabbix-srv systemd[1]: Started The nginx HTTP and reverse proxy server.
 ```
 
-Служба запущена и добавлена в автозапуск, поэтому осталось сделать только одну вещь, прежде чем мы сможем начать настройку в графическом интерфейсе, а именно настроить наш брандмауэр на разрешение входящего соединения с веб-сервером.
+The service is running and enabled so there is only 1 thing left to do before we can start the configuration in the GUI and that is to configure our firewall to allow incoming communication to the webserver.
 
 ```
 firewall-cmd --add-service=http --permanent
 firewall-cmd --reload
 ```
 
-Откройте браузер и перейдите по url или ip вашего фронтенда:
+Open your browser and go to the url or ip of your frontend :
 
 ```
-http://<ip или dns вашего фронтента сервера zabbix>/
+http://<ip or dns of the zabbix frontend server>/
 ```
 
-Если все прошло успешно, вас должна встретить страница приветствия Zabbix.
-В случае возникновения ошибки проверьте конфигурацию еще раз или посмотрите файл журнала nginx: 
+If all goes well you should be greeted with a Zabbix welcome page.
+In case you have an error check the configuration again or have a look at the nginx log file :
 
-``` /var/log/nginx/error.log ```
+`/var/log/nginx/error.log`
 
-или запустите 
+or run
 
-``` journalctl -xe ``` 
+`journalctl -xe`
 
-Это поможет вам найти ошибки, которые вы допустили.
+This should help you in locating the errors you made.
 
-Когда вы зайдете браузером по правильному URL, перед вами должна появиться страница, как здесь:
+When you point your browser to the correct URL you should be greeted with a page like here :
 
 ![Zabbix Welcome page](image/zabbix-welcome.png){width=800}
 
-Как видите, во фронтенде Zabbix доступен лишь ограниченный список местных переводов, из которых можно выбирать 
+As you see there is only a limited list of local translations available on our Zabbix frontend to choose from
 
 ![Zabbix Welcome page](image/zabbix-locales.png){width=800}
 
-Что если мы хотим установить китайский язык или другой язык из списка?
-Выполните следующую команду для получения списка всех локалей, доступных для вашей ОС.
+What if we want to install Chinese as language or another language from the list ?
+Run the next command to get a list of all locales available for your OS.
 
-```dnf list glibc-langpack-*```
+`dnf list glibc-langpack-*`
 
-В результате вы получите список вроде этого:
+This will give you a list like
 
 ```
 Installed Packages
@@ -569,7 +732,7 @@ glibc-langpack-aa.x86_64
 glibc-langpack-zu.x86_64
 ```
 
-Давайте поищем нашу китайскую локаль и посмотрим, доступна ли она. Как вы можете видеть, код начинается с zh
+Let's search for our Chinese locale to see if it is available. As you can see the code starts with zh
 
 ```
 # dnf list glibc-langpack-* | grep zh
@@ -577,79 +740,125 @@ glibc-langpack-zh.x86_64
 glibc-langpack-lzh.x86_64
 ```
 
-Команда возвращает нам 2 строки, но так как мы видели, что код был zh_CN, нам нужно установить только первый пакет.
+The command returns us 2 lines but as we have seen that the code was zh_CN we only have to install the first package.
 
 ```
 # dnf install glibc-langpack-zh.x86_64 -y
 ```
 
-Вернувшись во фронтенд, мы можем выбрать китайский язык. 
+When we return now to our frontend we are able to select the Chinese language.
 
 ![Zabbix Welcome page](image/zabbix-locales-chinese.png)
 
-???+ Note 
-    Если ваш язык недоступен во фронтенде, не паникуйте - это значит, что перевода нет или он не был выполнен на 100%. Zabbix бесплатен и полагается на сообщество в своих переводах, поэтому вы можете помочь в создании перевода. Перейдите на страницу ```https://translate.zabbix.com/``` и помогите нам сделать Zabbix лучше. Как только перевод будет завершен, в следующую версию минорного патча Zabbix будет включен ваш язык.
+???+ note
+If your preferred language is not available in the Zabbix front-end,
+don't worry—it simply means that the translation is either incomplete or not
+yet available.
+Zabbix is an open-source project that relies on community contributions for
+translations, so you can help improve it by contributing your own translations.
 
-Нажмите «Далее», если вас устраивают доступные транзакции. Вы попадете на экран, где нужно проверить, выполнены ли все предварительные условия. Если нет, сначала исправьте их, но в норме все должно быть в порядке, и вы сможете просто нажать кнопку Далее.
+    Visit the translation page at [https://translate.zabbix.com/](https://translate.zabbix.com/)
+    to assist with the translation efforts. Once your translation is complete and reviewed,
+    it will be included in the next minor patch version of Zabbix.
+    Your contributions help make Zabbix more accessible and improve the overall
+    user experience for everyone.
+
+When you're satisfied with the available translations, click **Next**.
+You will then be taken to a screen to verify that all prerequisites are met.
+If any prerequisites are not fulfilled, address those issues first.
+However, if everything is in order, you should be able to proceed by clicking **Next**.
 
 ![Zabbix Welcome page](image/pre-requisites.png)
 
-На следующей странице вы увидите страницу с параметрами подключения к нашей базе данных.
+On the next page, you'll configure the database connection parameters:
 
-Сначала выбираете тип БД 'MySQL' или 'PostgreSQL' и заполняете IP или DNS имя местонахождения вашего сервера базы данных. Используйте порт 3306 для MariaDB/MySQL или 5432, если используете PostgreSQL.
+1. **Select the Database Type**: Choose either `MySQL` or `PostgreSQL` depending
+   on your setup.
+2. **Enter the Database Host**: Provide the IP address or DNS name of your
+   database server. Use port `3306` for MariaDB/MySQL or `5432` for PostgreSQL.
+3. **Enter the Database Name**: Specify the name of your database. In our case,
+   it is `zabbix`. If you are using PostgreSQL, you will also need to provide
+   the schema name, which is `zabbix_server` in our case.
+4. **Enter the Database User**: Input the database user created for the web front-end,
+   such as `zabbix-web`. Enter the corresponding password for this user.
 
-Введите правильное имя базы данных, в нашем случае это ```zabbix```.
-Если вы используете PostgreSQL, то вам также нужно ввести правильное имя схемы, в нашем случае это ```zabbix_server```.
+Ensure that the **Database TLS encryption** option is not selected, and then click **Next step** to proceed.
 
-Следующая строка попросит вас ввести пользователей БД, здесь мы создали пользователя ```zabbix-web```. Введите его в нужное поле и заполните пароль, который вы использовали для этого пользователя.
-
-Убедитесь, что опция ```Database TLS encryption``` не выбрана и нажмите ```Next step```.
 ![Zabbix Welcome page](image/db-connection.png)
 
-Мы почти у цели. Осталось только дать нашему экземпляру имя, выбрать часовой пояс и время по умолчанию, которое мы хотим использовать.
+You're almost finished with the setup! The final steps involve:
+
+1. **Assigning an Instance Name**: Choose a descriptive name for your Zabbix instance.
+2. **Selecting the Timezone**: Choose the timezone that matches your location or
+   your preferred time zone for the Zabbix interface.
+3. **Setting the Default Time Format**: Select the default time format you prefer
+   to use.
+
+Once these settings are configured, you can complete the setup and proceed with
+any final configuration steps as needed.
+
+???+ note
+It’s a good practice to set your Zabbix server to the UTC timezone,
+especially when managing systems across multiple timezones. Using UTC helps
+ensure consistency in time-sensitive actions and events, as the server’s
+timezone is often used for calculating and displaying time-related information.
 
 ![Zabbix Welcome page](image/zabbix-summary.png)
 
-Нажмите ```Next Step``` еще раз, и увидите страницу, сообщающую об успешном завершении настройки.
-Нажмите Finish, чтобы завершить конфигурацию.
+After clicking **Next step** again, you'll be taken to a page confirming that
+the configuration was successful. Click **Finish** to complete the setup process.
 
 ![Zabbix Welcome page](image/zabbix-succcess.png)
 
-Теперь мы готовы ко входу в систему:
+We are now ready to login :
 
 ![Zabbix Welcome page](image/zabbix-login.png)
 
 Login : Admin
 Password : zabbix
 
-Если вы хотите защитить фронтенд с помощью SSL, ознакомьтесь со следующей темой
+This concludes our topic on setting up the Zabbix server. If you're interested
+in securing your front-end, I recommend checking out the topic
+[Securing Zabbix](../security/securing-zabbix.md) for additional guidance
+and best practices.
 
-[Безопасность Zabbix](../security/securing-zabbix.ru.md)
+---
 
-### Установка фронтента Zabbix с Apache
+## Installing Zabbix frontend with Apache
 
-Прежде чем мы сможем настроить наш фронтенд, нам нужно сначала установить пакет. Если вы запускаете фронтенд на том же сервере, что и сервер Zabbix, то вам больше ничего не нужно делать, вы можете просто выполнить следующую команду на своем сервере для установки пакетов, необходимых для установки нашего фронтенда:
+Before we can configure our frontend we need to install our package first.
+If you run the frontend on the same server as the Zabbix server then there is
+nothing else you have to do you can just run the following command on your server
+to install the packages needed for our frontend to install:
 
+```bash
+# dnf install zabbix-apache-conf zabbix-web-mysql
+or if you used PostgreSQL
+# dnf install zabbix-apache-conf zabbix-web-pgsql
 ```
-dnf install zabbix-apache-conf и zabbix-web-mysql или если вы используете Postgres dnf install zabbix-web-pgsql
-```
 
-Если фронтенд установлен на другом сервере, то нужно сначала добавить репозиторий Zabbix, как мы это сделали на нашем сервере Zabbix. Если вы забыли или просто пропустили эту тему и не знаете, как это сделать, посмотрите [Добавление репозитория Zabbix](#zabbix_2).
+This command will install the front-end packages along with the required
+dependencies for Nginx or Apache, depending on your web server choice.
+If you are installing the front-end on a different server, make sure to execute
+this command on that specific machine.
 
-Теперь мы готовы запустить наш веб-север и добавить его в автозагрузку.
+If you don't remember how to add the repository, have a look at [Adding the Zabbix repository](#adding-the-zabbix-repository)
 
-```
+We are now ready to start our websever and enable it so that it comes online after a reboot.
+
+```bash
 systemctl enable php-fpm --now
 systemctl enable httpd --now
 ```
 
-Давайте проверим, правильно ли запущена и включена служба (добавлена в автозагрузку), чтобы она пережила нашу перезагрузку в следующий раз.
+Let's verify if the service is properly started and enabled so that it survives
+our reboot next time.
 
-```
+```bash
 # systemctl status httpd
+```
 
-```
-```
+```bash
 ● httpd.service - The Apache HTTP Server
      Loaded: loaded (/usr/lib/systemd/system/httpd.service; enabled; preset: disabled)
     Drop-In: /usr/lib/systemd/system/httpd.service.d
@@ -675,46 +884,47 @@ Mar 04 08:50:17 localhost.localdomain httpd[690]: Server configured, listening o
 Mar 04 08:50:17 localhost.localdomain systemd[1]: Started The Apache HTTP Server.x
 ```
 
-Служба запущена и добавлена в автозагрузку, поэтому осталось сделать только одну вещь, прежде чем мы сможем начать настройку в графическом интерфейсе, а именно настроить наш брандмауэр на разрешение входящего соединения с веб-сервером.
+The service is running and enabled so there is only 1 thing left to do before
+we can start the configuration in the GUI and that is to configure our firewall
+to allow incoming communication to the webserver.
 
-```
-firewall-cmd --add-service=http --permanent
-firewall-cmd --reload
-```
-
-Откройте браузер и перейдите по url или ip вашего фронтенда:
-
-```
-http://<ip или dns фронтента сервера zabbix>/zabbix/
+```bash
+# firewall-cmd --add-service=http --permanent
+# firewall-cmd --reload
 ```
 
-Если все прошло успешно, то вас должна встретить страница приветствия Zabbix.
-В случае возникновения ошибки проверьте конфигурацию еще раз или посмотрите файл журнала Apache:
+Open your browser and go to the url or ip of your frontend :
 
-``` /var/log/httpd/error_log ```
+```bash
+http://<ip or dns of the zabbix frontend server>/zabbix/
+```
 
-или запустите
+If all goes well you should be greeted with a Zabbix welcome page.
+In case you have an error check the configuration again or have a look at the Apache log file :
 
-``` journalctl -xe ```
+`/var/log/httpd/error_log`
 
-Это поможет найти ошибки, которые вы допустили.
+or run
 
-Когда вы перейдете в браузер по правильному URL, перед вами должна появиться страница, как здесь:
+`journalctl -xe`
+
+This should help you in locating the errors you made.
 
 ![Zabbix Welcome page](image/zabbix-welcome.png){width=800}
 
-Как вы видите, во фронтенде Zabbix доступен лишь ограниченный список локализаций, из которых можно выбирать
+As you see there is only a limited list of local translations available on our
+Zabbix frontend to choose from
 
 ![Zabbix Welcome page](image/zabbix-locales.png){width=800}
 
-Что если мы хотим установить китайский язык или другой язык из списка?
-Выполните следующую команду, чтобы получить список всех локалей, доступных для вашей ОС.
+What if we want to install Chinese as language or another language from the list ?
+Run the next command to get a list of all locales available for your OS.
 
-```dnf list glibc-langpack-*```
+`dnf list glibc-langpack-*`
 
-В результате вы получите список, например
+This will give you a list like
 
-```
+```bash
 Installed Packages
 glibc-langpack-en.x86_64
 Available Packages
@@ -724,66 +934,105 @@ glibc-langpack-aa.x86_64
 glibc-langpack-zu.x86_64
 ```
 
-Давайте поищем нашу китайскую локаль и посмотрим, доступна ли она. Как вы можете видеть, код начинается с zh
+Let's search for our Chinese locale to see if it is available. As you can see the
+code starts with zh
 
-```
+```bash
 # dnf list glibc-langpack-* | grep zh
 glibc-langpack-zh.x86_64
 glibc-langpack-lzh.x86_64
 ```
 
-Команда возвращает нам 2 строки, но так как мы видели, что код был zh_CN, нам нужно установить только первый пакет.
+The command returns us 2 lines but as we have seen that the code was zh_CN we
+only have to install the first package.
 
 ```
 # dnf install glibc-langpack-zh.x86_64 -y
 ```
 
-Вернувшись во фронтенд, мы можем выбрать китайский язык.
+When we return now to our frontend we are able to select the Chinese language.
 
 ![Zabbix Welcome page](image/zabbix-locales-chinese.png)
 
-???+ Note
-    Если ваш язык недоступен во фронтенде, не паникуйте - это значит, что перевода нет или он не был выполнен на 100%. Zabbix бесплатен и полагается на сообщество в своих переводах, поэтому вы можете помочь в создании перевода. Перейдите на страницу ```https://translate.zabbix.com/``` и помогите нам сделать Zabbix лучше. Как только перевод будет завершен, в следующую версию минорного патча Zabbix будет включен ваш язык.
+???+ note
+If your preferred language is not available in the Zabbix front-end,
+don't worry—it simply means that the translation is either incomplete or not
+yet available.
+Zabbix is an open-source project that relies on community contributions for
+translations, so you can help improve it by contributing your own translations.
 
-Нажмите «Next», если вас устраивают доступные транзакции. Вы попадете на экран, где нужно проверить, выполнены ли все предварительные условия. Если нет, сначала исправьте их, но в норме все должно быть в порядке, и вы сможете просто нажать кнопку Next.
+    Visit the translation page at `https://translate.zabbix.com/` to assist with
+    the translation efforts. Once your translation is complete and reviewed,
+    it will be included in the next minor patch version of Zabbix.
+    Your contributions help make Zabbix more accessible and improve the overall
+    user experience for everyone.
+
+When you're satisfied with the available translations, click **Next**.
+You will then be taken to a screen to verify that all prerequisites are met.
+If any prerequisites are not fulfilled, address those issues first. However,
+if everything is in order, you should be able to proceed by clicking **Next**.
 
 ![Zabbix Welcome page](image/pre-requisites.png)
 
-На следующей странице вы увидите страницу с параметрами подключения к нашей базе данных.
+On the next page, you'll configure the database connection parameters:
 
-Сначала вы выбираете тип БД 'MySQL' или 'PostgreSQL' и заполняете IP или DNS-имя местонахождения вашего сервера базы данных. Используйте порт 3306 для MariaDB/MySQL или 5432, если используете PostgreSQL.
+1. **Select the Database Type**: Choose either MySQL or PostgreSQL depending on
+   your setup.
+2. **Enter the Database Host**: Provide the IP address or DNS name of your database
+   server. Use port 3306 for MariaDB/MySQL or 5432 for PostgreSQL.
+3. **Enter the Database Name**: Specify the name of your database. In our case,
+   it is zabbix. If you are using PostgreSQL, you will also need to provide the
+   schema name, which is zabbix_server in our case.
+4. **Enter the Database User**: Input the database user created for the web front-end,
+   such as zabbix-web. Enter the corresponding password for this user.
 
-Введите правильное название базы данных, в нашем случае это ```zabbix```.
-Если вы использовали PostgreSQL, то также нужно ввести правильное имя схемы, в нашем случае это ```zabbix_server```.
-
-Следующая строка попросит вас ввести пользователей БД, здесь мы создали пользователя ```zabbix-web```. Введите его в нужное поле и заполните пароль, который вы использовали для этого пользователя.
-
-Убедитесь, что опция ```Database TLS encryption``` не выбрана и нажмите ```Next step```.
+Ensure that the **Database TLS** encryption option is not selected, and then
+click **Next** step to proceed.
 
 ![Zabbix Welcome page](image/db-connection.png)
 
-Мы почти у цели. Осталось только дать нашему экземпляру имя, выбрать часовой пояс и выбрать время по умолчанию, которое хотим использовать.
+You're almost finished with the setup! The final steps involve:
+
+1. **Assigning an Instance Name**: Choose a descriptive name for your Zabbix instance.
+2. **Selecting the Timezone**: Choose the timezone that matches your location or
+   your preferred time zone for the Zabbix interface.
+3. **Setting the Default Time Format**: Select the default time format you
+   prefer to use.
+
+Once these settings are configured, you can complete the setup and proceed with
+any final configuration steps as needed.
+
+???+ note
+It’s a good practice to set your Zabbix server to the UTC timezone,
+especially when managing systems across multiple timezones.
+Using UTC helps ensure consistency in time-sensitive actions and events,
+as the server’s timezone is often used for calculating and displaying
+time-related information.
 
 ![Zabbix Welcome page](image/zabbix-summary.png)
 
-Нажмите ```Next step``` еще раз, и вы увидите страницу, сообщающую об успешном завершении настройки.
-Нажмите ```Finish``` чтобы завершить конфигурацию.
+After clicking **Next step** again, you'll be taken to a page confirming that the
+configuration was successful. Click **Finish** to complete the setup process.
 
 ![Zabbix Welcome page](image/zabbix-succcess.png)
 
-Теперь мы готовы к входу в систему:
+We are now ready to login :
 
 ![Zabbix Welcome page](image/zabbix-login.png)
 
 Login : Admin
 Password : zabbix
 
-Если вам, как и мне, не нравится путь /zabbix в конце вашего url, есть простой способ убрать его. Отредактируйте файл конфигурации ```httpd``` и добавьте строки ниже, заменив их на свой собственный домен:
+In case you are like me and don't like the /zabbix path at the end of you url then
+there is an easy way to remove this.
+Edit you `httpd` config file and add the lines below and replace it with
+your own domain:
 
+```bash
+# vi /etc/httpd/conf/httpd.conf
 ```
-vi /etc/httpd/conf/httpd.conf
-```
-```
+
+```bash
 NameVirtualHost 172.1.11.21:80
 
 <VirtualHost "your ip or dns":80>
@@ -793,11 +1042,14 @@ NameVirtualHost 172.1.11.21:80
 </VirtualHost>
 ```
 
-Не забудьте перезапустить службу ```httpd```
+Don't forget to restart the `httpd` service
 
+```bash
+# systemctl restart httpd
 ```
-systemctl restart httpd
-```
 
-
+This concludes our topic on setting up the Zabbix server. If you're interested
+in securing your front-end, I recommend checking out the topic
+[Securing Zabbix](../security/securing-zabbix.md) for additional guidance
+and best practices.
 
