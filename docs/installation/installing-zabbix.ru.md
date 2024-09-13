@@ -180,7 +180,8 @@ excludepkgs=zabbix*
 
 Это обновит метаданные репозитория и подготовит систему к установке Zabbix.
 
-???+ note Репозиторий в Linux - это конфигурация, которая позволяет вам получать доступ и устанавливать программные пакеты. Его можно представить как «магазин приложений», где вы находите и загружаете программное обеспечение из надежного источника, в данном случае из репозитория Zabbix. Существует множество репозиториев, но важно добавлять только те, которым вы доверяете. Безопаснее всего придерживаться репозиториев, предоставляемых вашей операционной системой, и добавлять дополнительные только тогда, когда вы уверены, что им можно доверять и они необходимы.
+???+ note
+Репозиторий в Linux - это конфигурация, которая позволяет вам получать доступ и устанавливать программные пакеты. Его можно представить как «магазин приложений», где вы находите и загружаете программное обеспечение из надежного источника, в данном случае из репозитория Zabbix. Существует множество репозиториев, но важно добавлять только те, которым вы доверяете. Безопаснее всего придерживаться репозиториев, предоставляемых вашей операционной системой, и добавлять дополнительные только тогда, когда вы уверены, что им можно доверять и они необходимы.
 
     Для нашей установки репозиторий Zabbix предоставлен самим производителем, что делает его надежным источником. Другим популярным и безопасным репозиторием для систем на базе RedHat является EPEL (Extra Packages for Enterprise Linux), широкоиспользуемый в корпоративных средах.
     Однако всегда соблюдайте осторожность при добавлении новых репозиториев, чтобы обеспечить безопасности и стабильности системы.
@@ -237,8 +238,8 @@ DBPort=3306
 
 Убедитесь, что настройки отражают конфигурацию базы данных в вашей среде.
 
-???+ note В конфигурационный файл сервера Zabbix можно включить дополнительные конфигурационные файлы для пользовательских параметров. Для продакшена часто лучше не изменять исходный файл конфигурации напрямую.
-Вместо этого можно создать и включить отдельный файл конфигурации для любых дополнительных или измененных параметров. Такой подход гарантирует, что исходный файл конфигурации останется нетронутым, что особенно полезно при выполнении обновлений или управлении конфигурациями с помощью таких инструментов, как Ansible, Puppet или SaltStack.
+???+ note
+В конфигурационный файл сервера Zabbix можно включить дополнительные конфигурационные файлы для пользовательских параметров. Для продакшена часто лучше не изменять исходный файл конфигурации напрямую. Вместо этого можно создать и включить отдельный файл конфигурации для любых дополнительных или измененных параметров. Такой подход гарантирует, что исходный файл конфигурации останется нетронутым, что особенно полезно при выполнении обновлений или управлении конфигурациями с помощью таких инструментов, как Ansible, Puppet или SaltStack.
 
 Чтобы включить эту функцию, уберите `#` из строки:
 
@@ -427,7 +428,8 @@ In this example:
 
 Make sure the settings reflect your environment's database configuration.
 
-???+ Note The Zabbix server configuration file offers an option to include additional configuration files for custom parameters. For a production environment, it's often best to avoid altering the original configuration file directly.
+???+ Note
+The Zabbix server configuration file offers an option to include additional configuration files for custom parameters. For a production environment, it's often best to avoid altering the original configuration file directly.
 Instead, you can create and include a separate configuration file for any additional or modified parameters. This approach ensures that your original configuration file remains untouched, which is particularly useful when performing upgrades or managing configurations with tools like Ansible, Puppet, or SaltStack. To enable this feature, remove the # from the line: `# Include=/usr/local/etc/zabbix_server.conf.d/*.conf` Then, ensure the path `/usr/local/etc/zabbix_server.conf.d/` exists and create a custom configuration file in this directory. This file should be readable by the `zabbix` user. By doing so, you can add
 or modify parameters without modifying the default configuration file, making system management and upgrades smoother.
 
@@ -719,7 +721,8 @@ When we return now to our frontend we are able to select the Chinese language.
 
 ![Zabbix Welcome page](image/zabbix-locales-chinese.png)
 
-???+ note If your preferred language is not available in the Zabbix front-end, don't worry—it simply means that the translation is either incomplete or not yet available. Zabbix is an open-source project that relies on community contributions for translations, so you can help improve it by contributing your own translations.
+???+ note
+If your preferred language is not available in the Zabbix front-end, don't worry—it simply means that the translation is either incomplete or not yet available. Zabbix is an open-source project that relies on community contributions for translations, so you can help improve it by contributing your own translations.
 
     Visit the translation page at [https://translate.zabbix.com/](https://translate.zabbix.com/)
     to assist with the translation efforts. Once your translation is complete and reviewed,
@@ -761,7 +764,8 @@ You're almost finished with the setup! The final steps involve:
 Once these settings are configured, you can complete the setup and proceed with
 any final configuration steps as needed.
 
-???+ note It’s a good practice to set your Zabbix server to the UTC timezone, especially when managing systems across multiple timezones. Using UTC helps ensure consistency in time-sensitive actions and events, as the server’s timezone is often used for calculating and displaying time-related information.
+???+ note
+It’s a good practice to set your Zabbix server to the UTC timezone, especially when managing systems across multiple timezones. Using UTC helps ensure consistency in time-sensitive actions and events, as the server’s timezone is often used for calculating and displaying time-related information.
 
 ![Zabbix Welcome page](image/zabbix-summary.png)
 
@@ -944,7 +948,8 @@ You're almost finished with the setup! The final steps involve:
 
 Once these settings are configured, you can complete the setup and proceed with any final configuration steps as needed.
 
-???+ note It’s a good practice to set your Zabbix server to the UTC timezone, especially when managing systems across multiple timezones. Using UTC helps ensure consistency in time-sensitive actions and events, as the server’s timezone is often used for calculating and displaying time-related information.
+???+ note
+It’s a good practice to set your Zabbix server to the UTC timezone, especially when managing systems across multiple timezones. Using UTC helps ensure consistency in time-sensitive actions and events, as the server’s timezone is often used for calculating and displaying time-related information.
 
 ![Zabbix Welcome page](image/zabbix-summary.png)
 
